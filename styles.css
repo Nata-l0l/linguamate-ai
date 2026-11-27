@@ -65,3 +65,22 @@ h1,h2,h3{color:#1c2b4a}
 /* Translator and daily vocabulary review */
 .translator-panel{background:linear-gradient(120deg,#fff 0%,#f1f3ff 65%,#edfbf7 100%);border:1px solid #e3e8f7;border-radius:17px;padding:22px;margin:0 0 20px;box-shadow:0 8px 24px #364b9610}.translator-head{display:flex;justify-content:space-between;align-items:center}.translator-head .eyebrow{margin-bottom:5px}.translator-head h2{font-size:17px;margin:0 0 5px}.translator-icon{font-size:28px;color:#5365db;background:#fff;border-radius:13px;padding:10px 14px}.translator-controls{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin:16px 0 10px}.translator-controls>span{color:#7b81a9}.translator-input{width:100%;resize:vertical;border:1px solid #e0e5f2;border-radius:10px;padding:13px;font:12px/1.6 inherit;color:#26345d;background:#fff;outline:none}.translator-input:focus{border-color:#7585e7}.translator-actions,.translation-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.translation-result{margin-top:15px;border:1px solid #dfe9e8;background:#fff;border-radius:12px;padding:15px}.translation-result[hidden]{display:none}.translation-result small{font-size:9px;letter-spacing:.8px;color:#8490a8;font-weight:800}.translation-result p{font-size:17px;font-weight:700;color:#29365b;margin:8px 0}.translation-result>small:last-child{display:block;margin-top:10px;letter-spacing:0;font-weight:500}.review-practice{display:flex;align-items:center;justify-content:space-between;gap:15px;background:#fff;border:1px solid #e7eaf3;border-radius:14px;padding:16px 19px;margin:20px 0 12px}.review-practice h2{font-size:16px;margin:3px 0}.review-practice .eyebrow{margin:0}.review-practice .muted{font-size:10px}.review-exercise{background:#fff;border:1px solid #e4e8f2;border-radius:14px;padding:20px;margin-bottom:17px}.review-exercise[hidden]{display:none}.review-exercise h2{margin:7px 0 17px}.review-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.review-options button{text-align:left}.answer-correct{background:#e8faf1!important;border-color:#75cba1!important;color:#207b51!important}.answer-wrong{background:#fff0ef!important;border-color:#e9a09b!important;color:#a43c36!important}
 @media(max-width:560px){.translator-panel{padding:15px}.translator-head h2{font-size:15px}.translator-controls{gap:6px}.translator-controls .select-field{font-size:10px;padding:10px 6px}.translator-actions>*{flex:1}.review-practice{align-items:flex-start;flex-direction:column}.review-options{grid-template-columns:1fr}}
+
+/* Interactive learning arcade */
+.arcade-panel{background:linear-gradient(135deg,#fff,#f4f3ff);border:1px solid #e4e3f5;border-radius:18px;padding:20px;margin:0 0 28px;box-shadow:0 8px 25px #3f3b8010}
+.arcade-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.arcade-tab{border:1px solid #e3e2f2;background:#fff;color:#56558b;border-radius:22px;padding:9px 13px;font-size:11px;font-weight:700;cursor:pointer}
+.arcade-tab.active{background:#514bb4;color:#fff;border-color:#514bb4}
+.arcade-stage{background:#fff;border:1px solid #eceaf7;border-radius:14px;padding:18px;min-height:170px}
+.arcade-prompt{display:flex;align-items:center;gap:16px}
+.arcade-art{width:86px;height:86px;flex:none;display:grid;place-items:center;border-radius:18px;background:linear-gradient(145deg,#ffe9ca,#f4d5ef);font-size:48px}
+.arcade-prompt h3{margin:5px 0;font-size:16px}
+.arcade-choices{display:flex;gap:9px;flex-wrap:wrap;margin-top:17px}
+.arcade-choice{border:1px solid #e3e4f2;background:#fafaff;color:#34345e;border-radius:10px;padding:11px 15px;font-weight:700;font-size:12px;cursor:pointer}
+.arcade-choice:hover{border-color:#7770d5;background:#f3f1ff}
+.arcade-feedback{min-height:18px;margin:12px 0 0;font-size:12px;font-weight:700;color:#b45a55}
+.arcade-feedback.good{color:#24875e}
+.crossword-entry{display:flex;gap:8px;margin-top:15px;align-items:center}
+.crossword-entry input{width:110px;border:1px solid #dcdcf0;border-radius:9px;padding:11px;text-align:center;letter-spacing:5px;font-weight:800;font-size:17px}
+button,.arcade-tab,.arcade-choice{touch-action:manipulation}
+@media(max-width:560px){.arcade-panel{padding:14px}.arcade-prompt{align-items:flex-start}.arcade-art{width:65px;height:65px;font-size:36px}.arcade-choices{display:grid;grid-template-columns:1fr}.arcade-choice{text-align:left}}
