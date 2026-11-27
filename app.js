@@ -40,7 +40,7 @@ function renderWords(){
  });
  renderStats();updateReviewDue();
 }
-$('#addWordBtn').onclick=$('#emptyAddBtn').onclick=()=>{$('#wordModal').hidden=false;$('#newWord').focus()};$('#closeModal').onclick=()=>$('#wordModal').hidden=true;$('#wordModal').addEventListener('click',e=>{if(e.target===$('#wordModal'))$('#wordModal').hidden=true});$('#wordForm').onsubmit=e=>{e.preventDefault();const word=$('#newWord').value.trim();if(!word)return;state.words.unshift({id:Date.now(),word,meaning:$('#wordMeaning').value.trim(),example:$('#wordExample').value.trim(),partOfSpeech:'',pronunciation:'',mastered:false,createdAt:Date.now(),nextReview:Date.now(),interval:0});save();e.target.reset();$('#wordModal').hidden=true;renderWords();toast(tr('wordAdded'))};$('#wordSearch').oninput=renderWords;$('#wordFilter').onchange=renderWords;
+$('#addWordBtn').onclick=$('#emptyAddBtn').onclick=()=>{$('#wordModal').hidden=false;$('#newWord').focus()};$('#closeModal').onclick=()=>$('#wordModal').hidden=true;$('#wordModal').addEventListener('click',e=>{if(e.target===$('#wordModal'))$('#wordModal').hidden=true});$('#wordForm').onsubmit=e=>{e.preventDefault();const word=$('#newWord').value.trim();if(!word)return;state.words.unshift({id:Date.now(),word,meaning:$('#wordMeaning').value.trim(),example:$('#wordExample').value.trim(),partOfSpeech:'',pronunciation:'',mastered:false,createdAt:Date.now(),nextReview:Date.now(),interval:0});save();e.target.reset();$('#wordModal').hidden=true;renderWords();toast(tr('wordAdded'))};$('#wordSearch').oninput=renderWords;$('#wordFilter').onchange=renderWords;document.addEventListener('linguamate:vocabulary-updated',()=>{try{const latest=JSON.parse(localStorage.getItem('lm-state')||'{}');if(Array.isArray(latest.words))state.words=latest.words;renderWords();renderStats();}catch(e){}});
 $('#saveSettings').onclick=()=>{state.name=$('#userName').value.trim()||'Learner';state.ui=$('#uiLanguage').value;state.native=$('#nativeLanguage').value;state.learning=$('#learningLanguage').value;state.level=$('#userLevel').value;save();applyLanguage();updateTutorSettings();$('#saveMessage').textContent=tr('saved');toast(tr('saved'))};$('#exportData').onclick=()=>{let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='linguamate-my-data.json';a.click();URL.revokeObjectURL(url);toast(tr('exported'))};
 let activeChatId = null;
 function ensureChat(){
@@ -204,14 +204,40 @@ const phraseIndex={
 "hello":["English","Spanish","Hola"],
 "goodbye":["English","Spanish","Adiós"]
 };
+
 let lastTranslation=null;
-function detectPhraseLanguage(text){const s=text.toLowerCase();if(/[а-яё]/i.test(s))return"Russian";if(/[áéíóúñ¿¡]/i.test(s)||["hola","gracias","por favor","buenos","dónde"].some(x=>s.includes(x)))return"Spanish";if(["guten","danke","bitte","ich"].some(x=>s.includes(x)))return"German";if(["bonjour","merci","s'il"].some(x=>s.includes(x)))return"French";return"English"}
-function translateOffline(text,from,to){const norm=text.trim().toLowerCase();if(!norm)return null;let hit=phraseIndex[norm];if(hit&&(from==="auto"||from===hit[0])&&(to===hit[1]||to==="Auto"))return{source:hit[0],target:hit[1],translation:hit[2],exact:true};const detected=from==="auto"?detectPhraseLanguage(text):from;const candidates=Object.entries(phraseIndex).filter(([k,v])=>v[0]===detected&&v[1]===to);const partial=candidates.find(([k])=>norm===k||norm.replace(/[.!?]+$/,"")===k.replace(/[.!?]+$/,""));if(partial)return{source:detected,target:to,translation:partial[1][2],exact:true};return{source:detected,target:to,translation:"This phrase is not in the offline phrasebook yet. Try a shorter common phrase, or add your own translation manually.",exact:false}}
-function speakText(text,language){if(!("speechSynthesis"in window)){toast("Speech is not supported in this browser");return}const map={Spanish:"es-ES",English:"en-US",Russian:"ru-RU",German:"de-DE",French:"fr-FR",Italian:"it-IT",Portuguese:"pt-PT",Japanese:"ja-JP",Korean:"ko-KR",Chinese:"zh-CN"};const utterance=new SpeechSynthesisUtterance(text);utterance.lang=map[language]||language;window.speechSynthesis.cancel();window.speechSynthesis.speak(utterance)}
-$("#translateBtn")?.addEventListener("click",()=>{const text=$("#translateInput").value.trim();if(!text){toast("Enter a word or sentence first");return}const result=translateOffline(text,$("#translateFrom").value,$("#translateTo").value);lastTranslation={...result,original:text};$("#translationResult").hidden=false;$("#translationText").textContent=result.translation;$("#translationNote").textContent=result.exact?"Offline phrasebook match · "+result.source+" → "+result.target:"Offline phrasebook has no match · no external service used";$("#saveTranslation").disabled=!result.exact;});
+const translationLanguages={English:'en',Spanish:'es',Russian:'ru',German:'de',French:'fr',Italian:'it',Portuguese:'pt',Chinese:'zh',Japanese:'ja',Korean:'ko'};
+const translationCache=new Map();
+function detectPhraseLanguage(text){const s=String(text||'').toLowerCase();if(/[а-яё]/i.test(s))return'Russian';if(/[ぁ-ゟ゠-ヿ]/.test(s))return'Japanese';if(/[가-힣]/.test(s))return'Korean';if(/[\u4e00-\u9fff]/.test(s))return'Chinese';if(/[ñ¿¡áéíóú]/i.test(s)||/\b(hola|gracias|por favor|buenos|dónde|quiero|estoy|manzana)\b/.test(s))return'Spanish';if(/[äöüß]/i.test(s)||/\b(ich|nicht|danke|bitte|und|der|die|das)\b/.test(s))return'German';if(/[àâçèêëîïôûùüÿœ]/i.test(s)||/\b(bonjour|merci|avec|être|avoir)\b/.test(s))return'French';if(/[ãõ]/i.test(s)||/\b(obrigado|obrigada|você|vocês|não)\b/.test(s))return'Portuguese';if(/[ì]/i.test(s)||/\b(ciao|grazie|per favore|sono|buongiorno)\b/.test(s))return'Italian';return'English'}
+function translateOffline(text,from,to){const norm=text.trim().toLowerCase();if(!norm)return null;let hit=phraseIndex[norm];if(hit&&(from==='auto'||from===hit[0])&&(to===hit[1]||to==='Auto'))return{source:hit[0],target:hit[1],translation:hit[2],exact:true};const detected=from==='auto'?detectPhraseLanguage(text):from;const candidates=Object.entries(phraseIndex).filter(([k,v])=>v[0]===detected&&v[1]===to);const partial=candidates.find(([k])=>norm===k||norm.replace(/[.!?]+$/,'')===k.replace(/[.!?]+$/,''));if(partial)return{source:detected,target:to,translation:partial[1][2],exact:true};return null}
+async function translateTextOnline(text,from,to){
+ const source=from==='auto'?detectPhraseLanguage(text):from;
+ const src=translationLanguages[source],dst=translationLanguages[to];
+ if(!src||!dst||src===dst)throw new Error(src===dst?'Choose two different languages':'This language pair is not supported.');
+ const key=source+'|'+to+'|'+text.trim().toLowerCase();
+ if(translationCache.has(key))return {...translationCache.get(key),cached:true};
+ const params=new URLSearchParams({q:text.slice(0,450),langpair:src+'|'+dst});
+ const response=await fetch('https://api.mymemory.translated.net/get?'+params.toString(),{headers:{Accept:'application/json'}});
+ if(!response.ok)throw new Error(response.status===429?'The free translation limit has been reached for now. Try again later.':'Translation service is temporarily unavailable.');
+ const data=await response.json();
+ const translated=String(data?.responseData?.translatedText||'').trim();
+ if(Number(data?.responseStatus)!==200||!translated||translated.toLowerCase()===text.trim().toLowerCase()&&source!==to)throw new Error(data?.responseDetails||'Could not translate this text. Try another phrase.');
+ const result={source,target:to,translation:translated,exact:true,provider:'MyMemory'};
+ translationCache.set(key,result);return result;
+}
+function speakText(text,language){if(!('speechSynthesis'in window)){toast('Speech is not supported in this browser');return}const map={Spanish:'es-ES',English:'en-US',Russian:'ru-RU',German:'de-DE',French:'fr-FR',Italian:'it-IT',Portuguese:'pt-PT',Japanese:'ja-JP',Korean:'ko-KR',Chinese:'zh-CN'};const utterance=new SpeechSynthesisUtterance(text);utterance.lang=map[language]||language;window.speechSynthesis.cancel();window.speechSynthesis.speak(utterance)}
+$("#translateBtn")?.addEventListener("click",async()=>{
+ const text=$("#translateInput").value.trim();if(!text){toast("Enter a word or sentence first");return}
+ const btn=$("#translateBtn"),resultBox=$("#translationResult"),note=$("#translationNote");
+ btn.disabled=true;btn.textContent='Translating…';resultBox.hidden=false;$("#translationText").textContent='Translating your text…';$("#saveTranslation").disabled=true;
+ const from=$("#translateFrom").value,to=$("#translateTo").value;
+ try{lastTranslation={...await translateTextOnline(text,from,to),original:text};$("#translationText").textContent=lastTranslation.translation;note.textContent=(lastTranslation.cached?'Saved result · ':'')+'Online translation · '+lastTranslation.source+' → '+lastTranslation.target+' · MyMemory';$("#saveTranslation").disabled=false;}
+ catch(error){const local=translateOffline(text,from,to);if(local){lastTranslation={...local,original:text};$("#translationText").textContent=local.translation;note.textContent='Offline phrasebook match · online service unavailable';$("#saveTranslation").disabled=false;}else{lastTranslation=null;$("#translationText").textContent='';note.textContent=error.message+' You can still add the word manually with your own translation.';}}
+ finally{btn.disabled=false;btn.textContent='Translate';}
+});
 $("#swapTranslate")?.addEventListener("click",()=>{const a=$("#translateFrom"),b=$("#translateTo");if(a.value==="auto")a.value=state.learning;const old=a.value;a.value=b.value;b.value=old;});
 $("#speakTranslation")?.addEventListener("click",()=>{if(lastTranslation)speakText(lastTranslation.translation,lastTranslation.target)});
-$("#saveTranslation")?.addEventListener("click",()=>{if(!lastTranslation?.exact)return;const item={id:Date.now(),word:lastTranslation.original,meaning:lastTranslation.translation,example:"",mastered:false,createdAt:Date.now(),nextReview:Date.now(),interval:0};if(state.words.some(w=>w.word.toLowerCase()===item.word.toLowerCase())){toast("Already saved");return}state.words.unshift(item);save();renderWords();toast(tr("wordAdded"))});
+$("#saveTranslation")?.addEventListener("click",()=>{if(!lastTranslation?.translation)return;const item={id:Date.now()+Math.random(),word:lastTranslation.original,meaning:lastTranslation.translation,example:"",partOfSpeech:"",pronunciation:"",mastered:false,createdAt:Date.now(),nextReview:Date.now(),interval:0,source:"translator"};if(state.words.some(w=>w.word.toLowerCase()===item.word.toLowerCase())){toast("Already saved");return}state.words.unshift(item);save();renderWords();toast(tr("wordAdded"))});
 function dueWords(){return state.words.filter(w=>!w.mastered&&(!w.nextReview||w.nextReview<=Date.now()))}
 function updateReviewDue(){const el=$("#reviewDueLabel");if(el)el.textContent=dueWords().length+" words due"}
 function startWordReview(){
