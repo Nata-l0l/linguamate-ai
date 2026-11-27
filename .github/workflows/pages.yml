@@ -31,7 +31,5 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
-        with:
-          artifact_id: ${{ steps.upload.outputs.artifact_id }}
 
 # Fresh deployment run to avoid reusing artifacts from the previous retry.
