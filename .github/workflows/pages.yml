@@ -30,3 +30,5 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+
+# Fresh deployment run to avoid reusing artifacts from the previous retry.
