@@ -171,7 +171,40 @@ $("#speakTranslation")?.addEventListener("click",()=>{if(lastTranslation)speakTe
 $("#saveTranslation")?.addEventListener("click",()=>{if(!lastTranslation?.exact)return;const item={id:Date.now(),word:lastTranslation.original,meaning:lastTranslation.translation,example:"",mastered:false,createdAt:Date.now(),nextReview:Date.now(),interval:0};if(state.words.some(w=>w.word.toLowerCase()===item.word.toLowerCase())){toast("Already saved");return}state.words.unshift(item);save();renderWords();toast(tr("wordAdded"))});
 function dueWords(){return state.words.filter(w=>!w.mastered&&(!w.nextReview||w.nextReview<=Date.now()))}
 function updateReviewDue(){const el=$("#reviewDueLabel");if(el)el.textContent=dueWords().length+" words due"}
-function startWordReview(){const box=$("#reviewExercise");const due=dueWords();box.hidden=false;box.innerHTML="";if(!due.length){box.textContent="You're all caught up! Add words or come back later.";return}let index=0,correct=0;function show(){box.innerHTML="";const w=due[index];const head=document.createElement("p");head.className="eyebrow";head.textContent="WORD "+(index+1)+" OF "+due.length;const prompt=document.createElement("h2");prompt.textContent="What does “"+w.word+"” mean?";const choices=document.createElement("div");choices.className="review-options";const pool=state.words.filter(x=>x.id!==w.id&&x.meaning).sort(()=>Math.random()-.5).slice(0,3);const options=[w,...pool].sort(()=>Math.random()-.5);options.forEach(o=>{const b=document.createElement("button");b.className="secondary-btn";b.textContent=o.meaning;b.onclick=()=>{if(b.disabled)return;[...choices.children].forEach(x=>x.disabled=true);if(o.id===w.id){correct++;b.classList.add("answer-correct");w.interval=Math.max(1,(w.interval||0)*2||1);w.nextReview=Date.now()+w.interval*86400000;w.reviewCount=(w.reviewCount||0)+1}else{b.classList.add("answer-wrong");w.interval=0;w.nextReview=Date.now()+10*60*1000}save();feedback.textContent=o.id===w.id?"Correct! Next review in "+w.interval+" day(s).":"Correct answer: "+w.meaning;next.disabled=false}};choices.append(b)});const feedback=document.createElement("p");feedback.className="quiz-feedback";const next=document.createElement("button");next.className="primary-btn";next.textContent=index===due.length-1?"Finish review":"Next word";next.disabled=true;next.onclick=()=>{index++;if(index<due.length)show();else{box.innerHTML="<h2>Review complete 🎉</h2><p>You got "+correct+" / "+due.length+" correct.</p>";renderWords();}};box.append(head,prompt,choices,feedback,next)}show();box.scrollIntoView({behavior:"smooth",block:"center"})}
+function startWordReview(){
+ const box=$("#reviewExercise"), due=dueWords();
+ box.hidden=false; box.innerHTML="";
+ if(!due.length){box.textContent="You are all caught up! Add words or come back later.";return;}
+ let index=0,correct=0;
+ function show(){
+  box.innerHTML="";
+  const w=due[index];
+  const head=document.createElement("p");head.className="eyebrow";head.textContent="WORD "+(index+1)+" OF "+due.length;
+  const prompt=document.createElement("h2");prompt.textContent="What does “"+w.word+"” mean?";
+  const choices=document.createElement("div");choices.className="review-options";
+  const feedback=document.createElement("p");feedback.className="quiz-feedback";
+  const next=document.createElement("button");next.className="primary-btn";next.textContent=index===due.length-1?"Finish review":"Next word";next.disabled=true;
+  const pool=state.words.filter(x=>x.id!==w.id&&x.meaning).sort(()=>Math.random()-.5).slice(0,3);
+  [w,...pool].sort(()=>Math.random()-.5).forEach(o=>{
+   const b=document.createElement("button");b.className="secondary-btn";b.textContent=o.meaning;
+   b.addEventListener("click",()=>{
+    if(next.disabled===false)return;
+    choices.querySelectorAll("button").forEach(x=>x.disabled=true);
+    if(o.id===w.id){correct++;b.classList.add("answer-correct");w.interval=Math.max(1,(w.interval||0)*2||1);w.nextReview=Date.now()+w.interval*86400000;w.reviewCount=(w.reviewCount||0)+1;feedback.textContent="Correct! Next review in "+w.interval+" day(s).";}
+    else{b.classList.add("answer-wrong");w.interval=0;w.nextReview=Date.now()+10*60*1000;feedback.textContent="Correct answer: "+w.meaning;}
+    save();next.disabled=false;
+   });
+   choices.append(b);
+  });
+  next.addEventListener("click",()=>{
+   index++;
+   if(index<due.length){show();}
+   else{box.innerHTML="<h2>Review complete 🎉</h2><p>You got "+correct+" / "+due.length+" correct.</p>";renderWords();}
+  });
+  box.append(head,prompt,choices,feedback,next);
+ }
+ show();box.scrollIntoView({behavior:"smooth",block:"center"});
+}
 $("#startReview")?.addEventListener("click",startWordReview);
 
 /* Interactive mini-games and resilient navigation */
