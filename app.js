@@ -82,19 +82,37 @@ const offlinePhrases={
   Chinese:[['你好，你怎么样？','Привет, как дела?','你好！你今天怎么样？'],['我叫……','Меня зовут…','我叫安娜。'],['请给我一杯咖啡。','Кофе, пожалуйста.','请给我一杯加牛奶的咖啡。'],['这个多少钱？','Сколько это стоит?','请问，这个多少钱？'],['我不明白。请再说一遍。','Я не понимаю. Повторите, пожалуйста.','请说慢一点，好吗？'],['我在学习中文。','Я учу китайский.','我在学习中文，想练习口语。']]
 };
 function offlineTutorReply(userText){
-  const bank=offlinePhrases[state.learning]||offlinePhrases.Spanish;
-  const text=userText.toLowerCase();
-  let index=0;
-  if(/cafe|coffee|food|restaurant|comer|café|еда|кафе|заказ|restaurant|food/.test(text))index=2;
-  else if(/price|cost|cuesta|сто|сколько|precio/.test(text))index=3;
-  else if(/understand|repeat|повтор|понима|no entiendo/.test(text))index=4;
-  else if(/name|introduc|меня зовут|present|llamo/.test(text))index=1;
-  else if(/learn|study|учу|изуч|aprender|estudi/.test(text))index=5;
-  else if(/hello|hola|привет|здравств|bonjour|ciao/.test(text))index=0;
-  const item=bank[index];
-  const intro=state.ui==='ru'?'Давай потренируем полезную фразу:':state.ui==='es'?'Vamos a practicar una frase útil:':'Let’s practise a useful phrase:';
-  const prompt=state.ui==='ru'?'Попробуй написать свой вариант на '+state.learning+'.':state.ui==='es'?'Intenta escribir tu propia versión en '+state.learning+'.':'Try writing your own version in '+state.learning+'.';
-  return intro+'\n\n'+item[0]+'\n'+item[1]+'\n\n'+(state.ui==='ru'?'Пример: ':state.ui==='es'?'Ejemplo: ':'Example: ')+item[2]+'\n\n'+prompt;
+ const bank=offlinePhrases[state.learning]||offlinePhrases.Spanish;
+ const text=userText.toLowerCase(),topic=($('#tutorTopic')?.value||'Everyday life');
+ let index=0;
+ if(/cafe|coffee|food|restaurant|comer|café|еда|кафе|заказ|restaurant/.test(text)||/food|restaurant|café/i.test(topic))index=2;
+ else if(/price|cost|cuesta|сто|сколько|precio|shopping/i.test(text)||/shopping/i.test(topic))index=3;
+ else if(/understand|repeat|повтор|понима|no entiendo/.test(text))index=4;
+ else if(/name|introduc|меня зовут|present|llamo|friends/i.test(text)||/friends/i.test(topic))index=1;
+ else if(/learn|study|учу|изуч|aprender|estudi/.test(text))index=5;
+ else if(/hello|hola|привет|здравств|bonjour|ciao/.test(text))index=0;
+ const item=bank[index],ru=state.ui==='ru',es=state.ui==='es';
+ const say=ru?'Давай потренируемся':es?'Vamos a practicar':'Let’s practise';
+ const role=/role.play|conversation|situation|dialogue|диалог|сцен/i.test(text);
+ const build=/sentence|build|составить|предложен/i.test(text);
+ const phrase=/phrase|useful|фраз/i.test(text);
+ const level=state.level||'A1';
+ if(role){
+  const opening=ru?'Ситуация: '+topic+'. Представь, что ты там. Скажи эту фразу, чтобы начать:':es?'Situación: '+topic+'. Imagina que estás allí. Usa esta frase para empezar:':'Scene: '+topic+'. Imagine you are there. Start with this line:';
+  const ask=ru?'Теперь ответь своими словами на '+state.learning+'. Я буду поддерживать разговор простыми репликами уровня '+level+'.':es?'Ahora responde con tus propias palabras en '+state.learning+'. Seguiremos con frases de nivel '+level+'.':'Now reply in your own words in '+state.learning+'. We will keep the conversation around '+level+'.';
+  return opening+'\n\n'+item[0]+'\n'+item[1]+'\n\n'+ask;
+ }
+ if(build){
+  const task=ru?'Задание уровня '+level+': составь своё предложение на '+state.learning+' с этой фразой:':es?'Reto de nivel '+level+': crea tu propia oración en '+state.learning+' con esta frase:':'Level '+level+' challenge: build your own sentence in '+state.learning+' using:';
+  const hint=ru?'Подсказка: пример — ':'Hint: example — ';
+  return say+'!\n\n'+task+'\n'+item[0]+'\n\n'+hint+item[2]+'\n\n'+(ru?'Напиши свой вариант ниже.':es?'Escribe tu versión abajo.':'Write your version below.');
+ }
+ if(phrase){
+  return (ru?'Фраза дня · тема «'+topic+'» · '+level:es?'Frase del día · tema «'+topic+'» · '+level:'Phrase of the day · '+topic+' · '+level)+'\n\n'+item[0]+'\n'+item[1]+'\n\n'+(ru?'Пример: ':'Example: ')+item[2]+'\n\n'+(ru?'Попробуй использовать её в своём предложении.':'Try using it in your own sentence.');
+ }
+ const intro=ru?'Давай потренируем полезную фразу по теме «'+topic+'»:':es?'Vamos a practicar una frase útil sobre «'+topic+'»:':'Let’s practise a useful phrase about '+topic+':';
+ const prompt=ru?'Попробуй написать свой вариант на '+state.learning+' (уровень '+level+').':es?'Intenta escribir tu propia versión en '+state.learning+' (nivel '+level+').':'Try writing your own version in '+state.learning+' (level '+level+').';
+ return intro+'\n\n'+item[0]+'\n'+item[1]+'\n\n'+(ru?'Пример: ':es?'Ejemplo: ':'Example: ')+item[2]+'\n\n'+prompt;
 }
 async function sendChat(text){
   text=text.trim();if(!text)return;
