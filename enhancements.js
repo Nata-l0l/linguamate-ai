@@ -51,7 +51,7 @@ function refreshAvatarStudio(){
  const p=$('#characterPreview');if(p){p.dataset.color=color;txt('characterPreviewEmoji',emoji);txt('characterPreviewAccessory',accessory+' '+item);txt('characterPreviewName',name);}
  [['characterName',name],['characterSpecies',emoji],['characterOutfit',accessory],['characterColor',color],['characterItem',item],['characterRole',role],['characterPersonality',personality],['characterMoodSelect',mood],['characterBio',bio],['characterPlace',c.place||'Enchanted forest'],['characterHobby',c.hobby||'Finding hidden words'],['mentorAvatarChoice',m.emoji||'🦉'],['mentorNameChoice',m.name||'Lumi']].forEach(([id,v])=>set(id,v));
  txt('characterCardName',name);txt('characterCardBio',bio);txt('characterRoleBadge',role);txt('characterMood',mood);txt('characterTrait',personality);txt('companionEmoji',emoji);txt('companionAccessory',accessory+' '+item);txt('companionName',name);txt('companionStatus',role+' · '+(s.wordQuestLevel||s.level||'A1'));
- const face=m.emoji||'🦉',mn=m.name||'Lumi';txt('mentorFace',face);txt('mentorLauncherFace',face);txt('mentorName',mn);txt('mentorLauncherName',mn+' · your guide');const av=document.querySelector('.profile-mini .avatar');if(av)av.textContent=emoji;
+ const face=m.emoji||'🦉',mn=m.name||'Lumi';txt('mentorFace',face);txt('mentorLauncherFace',face);txt('mentorName',mn);txt('mentorLauncherName',mn+' · your guide');['.profile-mini .avatar','.top-avatar','.tutor-avatar'].forEach(sel=>{const av=document.querySelector(sel);if(av)av.textContent=emoji;});
 }
 function refreshMentorStats(){const s=data(),words=s.words||[];if($('#mentorXp'))$('#mentorXp').textContent=(Number(s.xp)||0)+' XP';if($('#mentorWords'))$('#mentorWords').textContent=words.length;if($('#mentorLevel'))$('#mentorLevel').textContent=s.wordQuestLevel||s.level||'A1';}
 function mentorSay(message){const n=$('#mentorSpeech');if(n)n.textContent=message;refreshMentorStats();}
@@ -65,6 +65,9 @@ function setupCharacterStudio(){
  $('#saveMentor')?.addEventListener('click',()=>{const s=data();s.customMentor={emoji:$('#mentorAvatarChoice').value,name:($('#mentorNameChoice').value.trim()||'Lumi').slice(0,16)};put(s);refreshAvatarStudio();toast('Your learning guide is ready! 🌟');});
  refreshAvatarStudio();refreshMentorStats();
 }
+function characterReact(message){const n=$('#companionStatus');if(!n)return;n.textContent=message;clearTimeout(window.lmBuddyTimer);window.lmBuddyTimer=setTimeout(()=>{const s=data(),c=s.customCharacter||{};n.textContent=(c.role||'Adventure buddy')+' · '+(s.wordQuestLevel||s.level||'A1');},2600);}
+document.addEventListener('linguamate:character-celebrate',()=>characterReact('Amazing! +10 XP ⭐'));
+document.addEventListener('linguamate:vocabulary-updated',()=>characterReact('A new word collected! 📚'));
 document.addEventListener('linguamate:character-updated',refreshAvatarStudio);
 document.addEventListener('linguamate:vocabulary-updated',refreshMentorStats);
 document.addEventListener('click',e=>{const b=e.target.closest('[data-page]');if(b&&b.dataset.page==='character')refreshAvatarStudio();});
