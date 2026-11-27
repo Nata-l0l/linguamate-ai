@@ -204,3 +204,6 @@ input,select,textarea{accent-color:#655be0}
 .toast{background:#39366f}
 @media(max-width:760px){.main-area{padding-bottom:110px}.character-companion{max-width:calc(100vw - 24px)}.character-companion .companion-caption{max-width:90px;overflow:hidden}.mentor-panel{max-height:70vh;overflow:auto}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* One clear navigation system and learning shortcuts */
+.learning-shortcuts{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 22px}.learning-shortcuts .secondary-btn{min-height:42px;border-radius:13px}.sidebar .nav-list{gap:6px}.sidebar .nav-item{min-height:46px}.mobile-nav{grid-template-columns:repeat(5,minmax(0,1fr))}.mobile-nav button{min-width:0}.mobile-nav button small{font-size:10px}@media(max-width:760px){.learning-shortcuts{display:grid;grid-template-columns:1fr 1fr}.learning-shortcuts button:last-child{grid-column:1/-1}}
