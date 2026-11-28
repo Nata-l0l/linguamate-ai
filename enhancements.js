@@ -122,6 +122,9 @@ function setupCourseLessons(){
 }
 
 
+function renderCharacterGrowth(){const levelEl=$('#buddyGrowthLevel');if(!levelEl)return;const xp=Math.max(0,Number(data().xp)||0),steps=[0,100,250,500,1000],names=['Curious buddy','Little explorer','Story companion','Word guardian','World traveller'];let index=0;for(let i=0;i<steps.length;i++)if(xp>=steps[i])index=i;const next=steps[index+1],start=steps[index],pct=next?Math.min(100,(xp-start)/(next-start)*100):100;levelEl.textContent=index+1;$('#buddyGrowthXp').textContent=next?(xp-start)+' / '+(next-start)+' XP to next level':xp+' XP · maximum companion level';$('#buddyGrowthNext').textContent=next?'Next: '+names[index+1]+' · '+(next-xp)+' XP remaining':'Your buddy has reached the highest growth level!';$('#buddyGrowthBar').style.width=pct+'%';const status=$('#companionStatus');if(status&&!status.dataset.temporary)status.textContent=names[index]+' · Level '+(index+1);}
+document.addEventListener('linguamate:state-updated',renderCharacterGrowth);
+
 function renderAchievements(){
  const grid=$('#achievementGrid');if(!grid)return;const s=data(),words=s.words||[],stories=s.completedStories||[],lessons=s.courseCompleted||[],activity=s.activity||{},games=Number(s.totalGameWins||0);
  const days=Object.keys(activity).filter(k=>Number(activity[k])>0).sort();let streak=0,probe=new Date();const key=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');if(!activity[key(probe)])probe.setDate(probe.getDate()-1);while(streak<366&&Number(activity[key(probe)]||0)>0){streak++;probe.setDate(probe.getDate()-1)}
@@ -144,4 +147,4 @@ document.addEventListener('linguamate:vocabulary-updated',()=>characterReact('A 
 document.addEventListener('linguamate:character-updated',refreshAvatarStudio);
 document.addEventListener('linguamate:vocabulary-updated',refreshMentorStats);
 document.addEventListener('click',e=>{const b=e.target.closest('[data-page]');if(b&&b.dataset.page==='character')refreshAvatarStudio();});
-setupCourseLessons();renderAchievements();setupCharacterStudio();setupMentor();})();
+setupCourseLessons();renderAchievements();renderCharacterGrowth();setupCharacterStudio();setupMentor();})();
