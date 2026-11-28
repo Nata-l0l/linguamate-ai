@@ -93,15 +93,15 @@ const offlinePhrases={
 function offlineTutorReply(userText){
  const bank=offlinePhrases[state.learning]||offlinePhrases.Spanish;
  const clean=value=>String(value||'').toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9а-яё一-龯ぁ-んァ-ヶ가-힣\s]/gi,' ').replace(/\s+/g,' ').trim();
- const pending=state.tutorTask;
+ const pending=state.tutorTask,ru=state.ui==='ru',es=state.ui==='es';
  if(pending){
   state.tutorTask=null;
   const answer=clean(userText),expected=clean(pending.expected),tokens=expected.split(' ').filter(w=>w.length>2&&!['por','que','the','and','you','for','una','uno','los','las','del','con'].includes(w));
   const hits=tokens.filter(w=>answer.includes(w));
   const exact=expected.length>2&&answer.includes(expected);
-  if(exact)return 'Great work! You used the model phrase clearly.\n\nModel: '+pending.expected+'\nExample: '+pending.example+'\n\nTry changing one detail (a name, place or time) to make it your own.';
-  if(hits.length)return 'Good effort — I spotted: '+hits.join(', ')+'.\n\nI can only check key words offline, not reliably grade every grammar choice. Compare with this model: '+pending.expected+'\nExample: '+pending.example+'\n\nTry once more with one extra detail.';
-  return 'Thanks for trying! I can’t reliably grade a free-form sentence offline, so I won’t pretend this is a full correction. Here is a model you can compare with: '+pending.expected+'\nExample: '+pending.example+'\n\nTry again, changing one detail.';
+  if(exact)return (ru?'Отлично! Ты использовала образцовую фразу.':es?'¡Muy bien! Has usado correctamente la frase modelo.':'Great work! You used the model phrase clearly.')+'\n\nModel: '+pending.expected+'\nExample: '+pending.example+'\n\n'+(ru?'Попробуй изменить имя, место или время.':es?'Cambia un nombre, lugar u hora para hacerla tuya.':'Try changing one detail (a name, place or time) to make it your own.');
+  if(hits.length)return (ru?'Хорошая попытка! Я заметил ключевые слова: ':es?'¡Buen intento! He encontrado estas palabras clave: ':'Good effort — I spotted: ')+hits.join(', ')+'.\n\n'+(ru?'В офлайн-режиме я могу проверить ключевые слова, но не всю грамматику. Сравни с примером: ':es?'Sin conexión puedo comprobar palabras clave, pero no toda la gramática. Compara con este ejemplo: ':'I can only check key words offline, not reliably grade every grammar choice. Compare with this model: ')+pending.expected+'\nExample: '+pending.example+'\n\n'+(ru?'Попробуй ещё раз и добавь одну деталь.':es?'Inténtalo otra vez y añade un detalle.':'Try once more with one extra detail.');
+  return (ru?'Спасибо за попытку! Офлайн-режим не может надёжно проверить свободное предложение, поэтому я не буду выдавать это за полную коррекцию. Сравни с образцом: ':es?'¡Gracias por intentarlo! Sin conexión no puedo corregir con fiabilidad una frase libre. Compárala con este modelo: ':'Thanks for trying! I can’t reliably grade a free-form sentence offline, so I won’t pretend this is a full correction. Compare with this model: ')+pending.expected+'\nExample: '+pending.example+'\n\n'+(ru?'Попробуй ещё раз, изменив одну деталь.':es?'Inténtalo otra vez cambiando un detalle.':'Try again, changing one detail.');
  }
  const text=userText.toLowerCase(),topic=($('#tutorTopic')?.value||'Everyday life');
  let index=0;
