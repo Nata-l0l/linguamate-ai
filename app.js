@@ -92,6 +92,17 @@ const offlinePhrases={
 };
 function offlineTutorReply(userText){
  const bank=offlinePhrases[state.learning]||offlinePhrases.Spanish;
+ const clean=value=>String(value||'').toLocaleLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^\\p{L}\\p{N}\\s]/gu,' ').replace(/\\s+/g,' ').trim();
+ const pending=state.tutorTask;
+ if(pending){
+  state.tutorTask=null;
+  const answer=clean(userText),expected=clean(pending.expected),tokens=expected.split(' ').filter(w=>w.length>2&&!['por','que','the','and','you','for','una','uno','los','las','del','con'].includes(w));
+  const hits=tokens.filter(w=>answer.includes(w));
+  const exact=expected.length>2&&answer.includes(expected);
+  if(exact)return '¡Muy bien! / Great work! You used the model phrase clearly.\\n\\nModel: '+pending.expected+'\\nExample: '+pending.example+'\\n\\nTry changing one detail (a name, place or time) to make it your own.';
+  if(hits.length)return 'Good effort — I spotted: '+hits.join(', ')+'.\\n\\nI can only check key words offline, not reliably grade every grammar choice. Compare with this model: '+pending.expected+'\\nExample: '+pending.example+'\\n\\nTry once more with one extra detail.';
+  return 'Thanks for trying! I can’t reliably grade a free-form sentence offline, so I won’t pretend this is a full correction. Here is a model you can compare with: '+pending.expected+'\\nExample: '+pending.example+'\\n\\nTry again, changing one detail.';
+ }
  const text=userText.toLowerCase(),topic=($('#tutorTopic')?.value||'Everyday life');
  let index=0;
  if(/cafe|coffee|food|restaurant|comer|café|еда|кафе|заказ|restaurant/.test(text)||/food|restaurant|café/i.test(topic))index=2;
@@ -107,16 +118,19 @@ function offlineTutorReply(userText){
  const phrase=/phrase|useful|фраз/i.test(text);
  const level=state.level||'A1';
  if(role){
+  state.tutorTask={type:'roleplay',expected:item[0],example:item[2],topic};
   const opening=ru?'Ситуация: '+topic+'. Представь, что ты там. Скажи эту фразу, чтобы начать:':es?'Situación: '+topic+'. Imagina que estás allí. Usa esta frase para empezar:':'Scene: '+topic+'. Imagine you are there. Start with this line:';
   const ask=ru?'Теперь ответь своими словами на '+state.learning+'. Я буду поддерживать разговор простыми репликами уровня '+level+'.':es?'Ahora responde con tus propias palabras en '+state.learning+'. Seguiremos con frases de nivel '+level+'.':'Now reply in your own words in '+state.learning+'. We will keep the conversation around '+level+'.';
   return opening+'\n\n'+item[0]+'\n'+item[1]+'\n\n'+ask;
  }
  if(build){
+  state.tutorTask={type:'sentence',expected:item[0],example:item[2],topic};
   const task=ru?'Задание уровня '+level+': составь своё предложение на '+state.learning+' с этой фразой:':es?'Reto de nivel '+level+': crea tu propia oración en '+state.learning+' con esta frase:':'Level '+level+' challenge: build your own sentence in '+state.learning+' using:';
   const hint=ru?'Подсказка: пример — ':'Hint: example — ';
   return say+'!\n\n'+task+'\n'+item[0]+'\n\n'+hint+item[2]+'\n\n'+(ru?'Напиши свой вариант ниже.':es?'Escribe tu versión abajo.':'Write your version below.');
  }
  if(phrase){
+  state.tutorTask={type:'phrase',expected:item[0],example:item[2],topic};
   return (ru?'Фраза дня · тема «'+topic+'» · '+level:es?'Frase del día · tema «'+topic+'» · '+level:'Phrase of the day · '+topic+' · '+level)+'\n\n'+item[0]+'\n'+item[1]+'\n\n'+(ru?'Пример: ':'Example: ')+item[2]+'\n\n'+(ru?'Попробуй использовать её в своём предложении.':'Try using it in your own sentence.');
  }
  const intro=ru?'Давай потренируем полезную фразу по теме «'+topic+'»:':es?'Vamos a practicar una frase útil sobre «'+topic+'»:':'Let’s practise a useful phrase about '+topic+':';
