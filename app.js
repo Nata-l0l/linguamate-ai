@@ -111,7 +111,7 @@ function offlineTutorReply(userText){
  else if(/name|introduc|меня зовут|present|llamo|friends/i.test(text)||/friends/i.test(topic))index=1;
  else if(/learn|study|учу|изуч|aprender|estudi/.test(text))index=5;
  else if(/hello|hola|привет|здравств|bonjour|ciao/.test(text))index=0;
- const item=bank[index],ru=state.ui==='ru',es=state.ui==='es';
+ const item=bank[index];
  const say=ru?'Давай потренируемся':es?'Vamos a practicar':'Let’s practise';
  const role=/role.play|conversation|situation|dialogue|диалог|сцен/i.test(text);
  const build=/sentence|build|составить|предложен/i.test(text);
