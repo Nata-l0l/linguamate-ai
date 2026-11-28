@@ -322,7 +322,8 @@ document.addEventListener('click',e=>{const task=e.target.closest('[data-home-ac
  };
  const gameLanguageNames={es:'Spanish',en:'English',ru:'Russian',fr:'French',de:'German',it:'Italian',pt:'Portuguese',zh:'Chinese',ja:'Japanese',ko:'Korean'};
  const targetWord=w=>target==='es'?w.es:target==='en'?w.en:(gameWords[target]||{})[w.en]||'';
- const targetMeaning=w=>target==='es'?w.en:target==='en'?w.es:(gameWords[target]||{})[w.en]||'';\n const activeLevel=()=>target==='es'||target==='en'?level:'A1';
+ const targetMeaning=w=>target==='es'?w.en:target==='en'?w.es:(gameWords[target]||{})[w.en]||'';
+ const activeLevel=()=>target==='es'||target==='en'?level:'A1';
 
  const topics={"all":"All topics","food":"Food & cafés","travel":"Travel & city","home":"Home & family","school":"School & learning","nature":"Nature & world","feelings":"Feelings & people"};
  const levels=['A1','A2','B1','B2','C1','C2'];
