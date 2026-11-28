@@ -92,16 +92,16 @@ const offlinePhrases={
 };
 function offlineTutorReply(userText){
  const bank=offlinePhrases[state.learning]||offlinePhrases.Spanish;
- const clean=value=>String(value||'').toLocaleLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^\\p{L}\\p{N}\\s]/gu,' ').replace(/\\s+/g,' ').trim();
+ const clean=value=>String(value||'').toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9а-яё一-龯ぁ-んァ-ヶ가-힣\s]/gi,' ').replace(/\s+/g,' ').trim();
  const pending=state.tutorTask;
  if(pending){
   state.tutorTask=null;
   const answer=clean(userText),expected=clean(pending.expected),tokens=expected.split(' ').filter(w=>w.length>2&&!['por','que','the','and','you','for','una','uno','los','las','del','con'].includes(w));
   const hits=tokens.filter(w=>answer.includes(w));
   const exact=expected.length>2&&answer.includes(expected);
-  if(exact)return '¡Muy bien! / Great work! You used the model phrase clearly.\\n\\nModel: '+pending.expected+'\\nExample: '+pending.example+'\\n\\nTry changing one detail (a name, place or time) to make it your own.';
-  if(hits.length)return 'Good effort — I spotted: '+hits.join(', ')+'.\\n\\nI can only check key words offline, not reliably grade every grammar choice. Compare with this model: '+pending.expected+'\\nExample: '+pending.example+'\\n\\nTry once more with one extra detail.';
-  return 'Thanks for trying! I can’t reliably grade a free-form sentence offline, so I won’t pretend this is a full correction. Here is a model you can compare with: '+pending.expected+'\\nExample: '+pending.example+'\\n\\nTry again, changing one detail.';
+  if(exact)return 'Great work! You used the model phrase clearly.\n\nModel: '+pending.expected+'\nExample: '+pending.example+'\n\nTry changing one detail (a name, place or time) to make it your own.';
+  if(hits.length)return 'Good effort — I spotted: '+hits.join(', ')+'.\n\nI can only check key words offline, not reliably grade every grammar choice. Compare with this model: '+pending.expected+'\nExample: '+pending.example+'\n\nTry once more with one extra detail.';
+  return 'Thanks for trying! I can’t reliably grade a free-form sentence offline, so I won’t pretend this is a full correction. Here is a model you can compare with: '+pending.expected+'\nExample: '+pending.example+'\n\nTry again, changing one detail.';
  }
  const text=userText.toLowerCase(),topic=($('#tutorTopic')?.value||'Everyday life');
  let index=0;
